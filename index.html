@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body {
+            background-color: #fff;
+            color: #000;
+        }
+        td {
+            vertical-align: top;
+        }
+        #sequence {
+            background-color: #eee;
+            color: #000;
+        }
+    </style>
+    <script>
+        /*-*/;(function(){window.onload=function(){
+            sequence.oninput = function() {
+                const pat = sequence.value
+                    .split('\n')
+                    .map(p => p.trim())
+                    .filter(p => p.length && !p.startsWith('//'))
+                    .map(p => p
+                        .split(',')
+                        .map(e => parseInt(e))
+                        .filter(e => !isNaN(e)));
+                if (!pat.length || !pat.every(p => 2 == p.length)) return;
+
+                carrelage.innerHTML = '';
+
+                // 5 sequences of 12 repetitions is clearly overkill in ~~most~~ every cases
+                for (const xy of [[0, 0], [6, -6], [-6, 6], [12, -12], [-12, 12]])
+                for (let k = 0; k < 12; ++k)
+                for (const vh of pat) {
+                    for (let o = 0; o < vh[0]; ++o) tilev(xy[0]++, xy[1]);
+                    for (let o = 0; o < vh[1]; ++o) tileh(xy[0], xy[1]++);
+                }
+            }
+            sequence.oninput();
+
+            function tileh(x, y) { tile(x, y, 6, 1); }
+            function tilev(x, y) { tile(x, y, 1, 6); }
+            function tile(x, y, w, h) {
+                const U = 10;
+                const r = carrelage.appendChild(document.createElementNS("http://www.w3.org/2000/svg", 'rect'));
+                r.setAttributeNS(null, 'x', x*U);
+                r.setAttributeNS(null, 'y', y*U);
+                r.setAttributeNS(null, 'width', w*U);
+                r.setAttributeNS(null, 'height', h*U);
+            }
+        }})();
+    </script>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>
+                <textarea rows="24" cols="12" id="sequence" autofocus>2,3
+2,2
+3,2</textarea>
+            </dt>
+            <td>
+                <svg
+                    width="200mm"
+                    height="200mm"
+                    viewBox="0 0 200 200">
+                    <g id="carrelage" style="fill:#ffffff;stroke:#000000">
+                    </g>
+                </svg>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
