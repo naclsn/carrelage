@@ -20,6 +20,8 @@
     </style>
     <script>
         /*-*/;(function(){window.onload=function(){
+            let LENGTH = 0, WIDTH = 0, SPACE = 0;
+
             sequence.oninput = function() {
                 const pat = sequence.value
                     .split('\n')
@@ -33,25 +35,46 @@
 
                 carrelage.innerHTML = '';
 
+                const R = LENGTH+SPACE;
+
                 // 5 sequences of 12 repetitions is clearly overkill in ~~most~~ every cases
-                for (const xy of [[0, 0], [6, -6], [-6, 6], [12, -12], [-12, 12]])
-                for (let k = 0; k < 12; ++k)
+                for (const xy of [[0, 0], [R, -R], [-R, R], [2*R, -2*R], [-2*R, 2*R]])
+                for (let k = 0; k < 24/pat.length; ++k)
                 for (const vh of pat) {
-                    for (let o = 0; o < vh[0]; ++o) tilev(xy[0]++, xy[1]);
-                    for (let o = 0; o < vh[1]; ++o) tileh(xy[0], xy[1]++);
+                    for (let o = 0; o < vh[0]; ++o) {
+                        tilev(xy[0], xy[1]);
+                        xy[0]+= WIDTH+SPACE;
+                    }
+                    for (let o = 0; o < vh[1]; ++o) {
+                        tileh(xy[0], xy[1]);
+                        xy[1]+= WIDTH+SPACE;
+                    }
                 }
             }
-            sequence.oninput();
 
-            function tileh(x, y) { tile(x, y, 6, 1); }
-            function tilev(x, y) { tile(x, y, 1, 6); }
+            tilelength.oninput = tilewidth.oninput = tilespace.oninput = updateall;
+            updateall();
+
+            function updateall() {
+                if (tilelength.valueAsNumber) LENGTH = tilelength.valueAsNumber;
+                if (tilewidth.valueAsNumber) WIDTH = tilewidth.valueAsNumber;
+                if (tilespace.valueAsNumber) SPACE = tilespace.valueAsNumber/10;
+                if (LENGTH < WIDTH) {
+                    tmp = WIDTH;
+                    WIDTH = LENGTH;
+                    LENGTH = tmp;
+                }
+                sequence.oninput()
+            }
+
+            function tileh(x, y) { tile(x, y, LENGTH, WIDTH); }
+            function tilev(x, y) { tile(x, y, WIDTH, LENGTH); }
             function tile(x, y, w, h) {
-                const U = 10;
                 const r = carrelage.appendChild(document.createElementNS("http://www.w3.org/2000/svg", 'rect'));
-                r.setAttributeNS(null, 'x', x*U);
-                r.setAttributeNS(null, 'y', y*U);
-                r.setAttributeNS(null, 'width', w*U);
-                r.setAttributeNS(null, 'height', h*U);
+                r.setAttributeNS(null, 'x', x);
+                r.setAttributeNS(null, 'y', y);
+                r.setAttributeNS(null, 'width', w);
+                r.setAttributeNS(null, 'height', h);
             }
         }})();
     </script>
@@ -60,18 +83,16 @@
     <table>
         <tr>
             <td>
-                <textarea rows="24" cols="12" id="sequence" autofocus>2,3
+                <label>longueur (cm)<br /><input type="number" id="tilelength" value="120" /><br /></label>
+                <label>largeur (cm)<br /><input type="number" id="tilewidth" value="20" /><br /></label>
+                <label>jointure (mm)<br /><input type="number" id="tilespace" value="2" /><br /></label>
+                <hr style="margin: 0.5rem !important;" />
+                <label>pattern<br />(vertical, horizontal..)<br /><textarea rows="24" cols="12" id="sequence" autofocus>2,3
 2,2
-3,2</textarea>
+3,2</textarea></label>
             </dt>
             <td>
-                <svg
-                    width="400mm"
-                    height="400mm"
-                    viewBox="0 0 400 400">
-                    <g id="carrelage" style="fill:#ffffff;stroke:#000000">
-                    </g>
-                </svg>
+                <svg width="400mm" height="400mm"><g id="carrelage" style="fill:#ffffff;stroke:#000000"></g></svg>
             </td>
         </tr>
     </table>
